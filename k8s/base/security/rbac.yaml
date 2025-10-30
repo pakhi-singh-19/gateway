@@ -1,0 +1,84 @@
+
+# RBAC configuration for API Gateway
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: api-gateway-sa
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+  annotations:
+    iam.gke.io/gcp-service-account: api-gateway-sa@ecp-project-476405.iam.gserviceaccount.com
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: api-gateway-cluster-role
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+rules:
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["gateway.networking.k8s.io"]
+  resources: ["gateways", "httproutes"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+- apiGroups: ["networking.gke.io"]
+  resources: ["managedcertificates"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: api-gateway-cluster-role-binding
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+subjects:
+- kind: ServiceAccount
+  name: api-gateway-sa
+  namespace: microservices
+roleRef:
+  kind: ClusterRole
+  name: api-gateway-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: api-gateway-role
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+rules:
+- apiGroups: [""]
+  resources: ["secrets", "configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: api-gateway-role-binding
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+subjects:
+- kind: ServiceAccount
+  name: api-gateway-sa
+  namespace: microservices
+roleRef:
+  kind: Role
+  name: api-gateway-role
+  apiGroup: rbac.authorization.k8s.io

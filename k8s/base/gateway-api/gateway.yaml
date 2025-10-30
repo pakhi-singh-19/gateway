@@ -1,0 +1,60 @@
+# API Gateway Configuration for Microservices
+# This Gateway resource defines the entry point for external traffic
+# Segregated from microservice configurations for better separation of concerns
+
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: microservices-gateway
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: gateway
+    managed-by: terraform
+    version: v1.0.0
+  annotations:
+    networking.gke.io/load-balancer-type: "External"
+    cloud.google.com/neg: '{"ingress": true}'
+    config.kubernetes.io/origin: "gateway-repository"
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: All
+  - name: https
+    port: 443
+    protocol: HTTPS
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: microservices-ssl-cert
+        kind: Secret
+    allowedRoutes:
+      namespaces:
+        from: All
+  addresses:
+  - type: NamedAddress
+    value: api-gateway-ip  # This should match the global IP address name from Terraform
+---
+# SSL Certificate Secret (managed by cert-manager or External Secrets Operator)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: microservices-ssl-cert
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: ssl-cert
+    managed-by: terraform
+  annotations:
+    external-secrets.io/backend: "gcp-secret-manager"
+    external-secrets.io/key: "ssl-certificate"
+type: kubernetes.io/tls
+data:
+  # These will be populated by External Secrets Operator from GCP Secret Manager
+  tls.crt: ""
+  tls.key: ""

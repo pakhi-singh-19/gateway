@@ -1,0 +1,55 @@
+# Staging Environment Overlay for Gateway
+# Updated to reflect segregated gateway configuration
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gateway-staging
+  labels:
+    app: api-gateway
+    environment: staging
+    managed-by: terraform
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+    segregated-from: "customer-management-service"
+
+resources:
+- ../../base
+
+namespace: microservices-staging
+
+commonLabels:
+  environment: staging
+  deployment-target: staging
+
+commonAnnotations:
+  environment: staging
+  gateway.config.kubernetes.io/segregated: "true"
+  gateway.config.kubernetes.io/source: "gateway-repository"
+
+patchesStrategicMerge:
+- gateway-patch.yaml
+- httproute-patch.yaml
+
+# Environment-specific configurations
+configMapGenerator:
+- name: gateway-config
+  behavior: merge
+  literals:
+  - environment=staging
+  - log_level=info
+  - rate_limit_requests=500
+  - rate_limit_interval=60
+  - ssl_enabled=true
+  - monitoring_enabled=true
+  - gateway_domain=staging-api.microservices.ecp-project-476405.com
+  - backup_domain=staging-microservices.ecp-project-476405.com
+
+# Staging-specific secret configurations
+secretGenerator:
+- name: gateway-staging-secrets
+  literals:
+  - ssl_cert_name=staging-microservices-ssl-cert
+  - security_policy=staging-api-gateway-security-policy
+  type: Opaque

@@ -1,0 +1,27 @@
+# Environment-specific gateway settings for development
+
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: microservices-gateway
+  namespace: microservices-dev
+  labels:
+    environment: dev
+    deployment-target: development
+  annotations:
+    networking.gke.io/load-balancer-type: "External"
+    cloud.google.com/neg: '{"ingress": true}'
+    config.kubernetes.io/origin: "gateway-repository"
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: All
+  # HTTPS disabled for development
+  addresses:
+  - type: NamedAddress
+    value: dev-api-gateway-ip

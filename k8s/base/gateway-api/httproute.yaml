@@ -1,0 +1,215 @@
+# HTTPRoute Configuration for Microservices API Gateway
+# This defines the routing rules for different microservices
+# Centralized routing configuration for all microservices
+
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: microservices-routes
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: routing
+    managed-by: terraform
+    version: v1.0.0
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+spec:
+  parentRefs:
+  - name: microservices-gateway
+    namespace: microservices
+  hostnames:
+  - "api.microservices.ecp-project-476405.com"
+  - "microservices.ecp-project-476405.com"
+  rules:
+  # Customer Management Service Routes
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/customers
+    - headers:
+      - name: "Content-Type"
+        value: "application/json"
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Service-Route"
+          value: "customer-service"
+        - name: "X-Gateway-Timestamp"
+          value: "#{timestamp}"
+        - name: "X-Gateway-Version"
+          value: "v1.0.0"
+  
+  # Customer GraphQL endpoint
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/customers/graphql
+    - headers:
+      - name: "Content-Type"
+        value: "application/json"
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Service-Route"
+          value: "customer-graphql"
+        - name: "X-Gateway-Version"
+          value: "v1.0.0"
+
+  # Catalog Management Service Routes
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/products
+    - headers:
+      - name: "Content-Type"
+        value: "application/json"
+    backendRefs:
+    - name: catalog-management-service
+      port: 8082
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Service-Route"
+          value: "catalog-service"
+        - name: "X-Gateway-Timestamp"
+          value: "#{timestamp}"
+        - name: "X-Gateway-Version"
+          value: "v1.0.0"
+
+  # Catalog GraphQL endpoint
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/products/graphql
+    - headers:
+      - name: "Content-Type"
+        value: "application/json"
+    backendRefs:
+    - name: catalog-management-service
+      port: 8082
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Service-Route"
+          value: "catalog-graphql"
+        - name: "X-Gateway-Version"
+          value: "v1.0.0"
+
+  # Order Management Service Routes
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/orders
+    - headers:
+      - name: "Content-Type"
+        value: "application/json"
+    backendRefs:
+    - name: order-management-service
+      port: 8083
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Service-Route"
+          value: "order-service"
+        - name: "X-Gateway-Timestamp"
+          value: "#{timestamp}"
+        - name: "X-Gateway-Version"
+          value: "v1.0.0"
+
+  # Order GraphQL endpoint
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/orders/graphql
+    - headers:
+      - name: "Content-Type"
+        value: "application/json"
+    backendRefs:
+    - name: order-management-service
+      port: 8083
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Service-Route"
+          value: "order-graphql"
+        - name: "X-Gateway-Version"
+          value: "v1.0.0"
+
+  # Health check endpoints (load balanced across all services)
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /actuator/health
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 33
+    - name: catalog-management-service
+      port: 8082
+      weight: 33
+    - name: order-management-service
+      port: 8083
+      weight: 34
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Health-Check"
+          value: "gateway"
+        - name: "X-Gateway-Version"
+          value: "v1.0.0"
+
+  # API documentation and landing page
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/docs
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Default-Route"
+          value: "api-docs"
+        - name: "X-Gateway-Version"
+          value: "v1.0.0"
+
+  # Default API route (fallback)
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Default-Route"
+          value: "fallback"
+        - name: "X-Gateway-Version"
+          value: "v1.0.0"

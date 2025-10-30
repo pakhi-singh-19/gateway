@@ -1,0 +1,39 @@
+# Environment-specific gateway settings for production
+
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: microservices-gateway
+  namespace: microservices
+  labels:
+    environment: prod
+    deployment-target: production
+  annotations:
+    networking.gke.io/load-balancer-type: "External"
+    cloud.google.com/neg: '{"ingress": true}'
+    cloud.google.com/backend-config: '{"default": "api-gateway-backend-config"}'
+    networking.gke.io/managed-certificates: "microservices-ssl-cert"
+    config.kubernetes.io/origin: "gateway-repository"
+spec:
+  gatewayClassName: gke-l7-global-external-managed
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+    allowedRoutes:
+      namespaces:
+        from: All
+  - name: https
+    port: 443
+    protocol: HTTPS
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: microservices-ssl-cert
+        kind: Secret
+    allowedRoutes:
+      namespaces:
+        from: All
+  addresses:
+  - type: NamedAddress
+    value: api-gateway-ip

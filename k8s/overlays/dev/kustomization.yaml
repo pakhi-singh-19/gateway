@@ -1,0 +1,55 @@
+# Development Environment Overlay for Gateway
+# Updated to reflect segregated gateway configuration
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gateway-dev
+  labels:
+    app: api-gateway
+    environment: dev
+    managed-by: terraform
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+    segregated-from: "customer-management-service"
+
+resources:
+- ../../base
+
+namespace: microservices-dev
+
+commonLabels:
+  environment: dev
+  deployment-target: development
+
+commonAnnotations:
+  environment: development
+  gateway.config.kubernetes.io/segregated: "true"
+  gateway.config.kubernetes.io/source: "gateway-repository"
+
+patchesStrategicMerge:
+- gateway-patch.yaml
+- httproute-patch.yaml
+
+# Environment-specific configurations
+configMapGenerator:
+- name: gateway-config
+  behavior: merge
+  literals:
+  - environment=dev
+  - log_level=debug
+  - rate_limit_requests=100
+  - rate_limit_interval=60
+  - ssl_enabled=false
+  - monitoring_enabled=true
+  - gateway_domain=dev-api.microservices.ecp-project-476405.com
+  - backup_domain=dev-microservices.ecp-project-476405.com
+
+# Development-specific secret configurations
+secretGenerator:
+- name: gateway-dev-secrets
+  literals:
+  - ssl_cert_name=dev-microservices-ssl-cert
+  - security_policy=dev-api-gateway-security-policy
+  type: Opaque

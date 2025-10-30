@@ -1,0 +1,85 @@
+
+# Environment-specific routing settings for development
+
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: microservices-routes
+  namespace: microservices-dev
+  labels:
+    environment: dev
+    deployment-target: development
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+    routing.gateway.io/environment: "development"
+spec:
+  parentRefs:
+  - name: microservices-gateway
+    namespace: microservices-dev
+  hostnames:
+  - "dev-api.microservices.ecp-project-476405.com"
+  - "dev-microservices.ecp-project-476405.com"
+  rules:
+  # Development routing with debug headers
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/customers
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Environment"
+          value: "development"
+        - name: "X-Gateway-Source"
+          value: "gateway-repository"
+        - name: "X-Debug-Mode"
+          value: "enabled"
+        - name: "X-SSL-Enabled"
+          value: "false"
+  
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/products
+    backendRefs:
+    - name: catalog-management-service
+      port: 8082
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Environment"
+          value: "development"
+        - name: "X-Gateway-Source"
+          value: "gateway-repository"
+        - name: "X-Debug-Mode"
+          value: "enabled"
+        - name: "X-SSL-Enabled"
+          value: "false"
+  
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/orders
+    backendRefs:
+    - name: order-management-service
+      port: 8083
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Environment"
+          value: "development"
+        - name: "X-Gateway-Source"
+          value: "gateway-repository"
+        - name: "X-Debug-Mode"
+          value: "enabled"
+        - name: "X-SSL-Enabled"
+          value: "false"

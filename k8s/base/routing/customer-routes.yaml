@@ -1,0 +1,89 @@
+# Customer Management Service Routing Configuration
+# Segregated routing rules for customer-related endpoints
+
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: customer-service-routes
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: routing
+    service: customer-management
+    managed-by: terraform
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+    service.kubernetes.io/target: "customer-management-service"
+spec:
+  parentRefs:
+  - name: microservices-gateway
+    namespace: microservices
+  hostnames:
+  - "api.microservices.ecp-project-476405.com"
+  - "microservices.ecp-project-476405.com"
+  rules:
+  # Customer REST API endpoints
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/customers
+    - headers:
+      - name: "Content-Type"
+        value: "application/json"
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Service-Route"
+          value: "customer-service"
+        - name: "X-Gateway-Timestamp"
+          value: "#{timestamp}"
+        - name: "X-Service-Version"
+          value: "v1.0.0"
+        - name: "X-Routing-Source"
+          value: "gateway-repository"
+  
+  # Customer GraphQL endpoint
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/customers/graphql
+    - headers:
+      - name: "Content-Type"
+        value: "application/json"
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Service-Route"
+          value: "customer-graphql"
+        - name: "X-Service-Version"
+          value: "v1.0.0"
+        - name: "X-Routing-Source"
+          value: "gateway-repository"
+
+  # Customer health check endpoint
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/customers/health
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Health-Check"
+          value: "customer-service"
+        - name: "X-Routing-Source"
+          value: "gateway-repository"

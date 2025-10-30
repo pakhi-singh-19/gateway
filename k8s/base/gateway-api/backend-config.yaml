@@ -1,0 +1,92 @@
+# Centralized backend configuration for gateway operations
+
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: api-gateway-backend-config
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: backend-config
+    managed-by: terraform
+    version: v1.0.0
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+spec:
+  # Health check configuration
+  healthCheck:
+    checkIntervalSec: 10
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 3
+    type: HTTP
+    requestPath: /actuator/health
+    port: 8080
+  
+  # Session affinity for stateful operations
+  sessionAffinity:
+    affinityType: "CLIENT_IP"
+    affinityCookieTtlSec: 3600
+  
+  # Connection draining timeout
+  connectionDraining:
+    drainingTimeoutSec: 60
+  
+  # Request/response timeout settings
+  timeoutSec: 30
+  
+  # Security policy reference
+  securityPolicy:
+    name: "api-gateway-security-policy"
+  
+  # Custom request headers for gateway identification
+  customRequestHeaders:
+    headers:
+    - "X-Gateway-Source:gke-gateway"
+    - "X-Forwarded-Proto:https"
+    - "X-Gateway-Repository:gateway-repo"
+  
+  # Logging configuration
+  logging:
+    enable: true
+    sampleRate: 1.0
+  
+  # CDN configuration (disabled for API traffic)
+  cdn:
+    enabled: false
+    cachePolicy:
+      includeHost: true
+      includeProtocol: true
+      includeQueryString: false
+  
+  # IAP (Identity-Aware Proxy) configuration
+  iap:
+    enabled: false
+    oauthclientCredentials:
+      secretName: "oauth-client-secret"
+---
+# FrontendConfig for additional frontend configurations
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: api-gateway-frontend-config
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: frontend-config
+    managed-by: terraform
+    version: v1.0.0
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+spec:
+  # SSL redirect configuration
+  redirectToHttps:
+    enabled: true
+    responseCodeName: "MOVED_PERMANENTLY_DEFAULT"
+  
+  # SSL policy reference
+  sslPolicy: "api-gateway-ssl-policy"
+  
+  # Security policy for rate limiting and DDoS protection
+  securityPolicy:
+    name: "api-gateway-security-policy"

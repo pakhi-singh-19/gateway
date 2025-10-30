@@ -1,0 +1,26 @@
+# Kustomization for Security resources
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gateway-security-base
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+
+resources:
+- security-policies.yaml
+- rbac.yaml
+
+commonLabels:
+  app: api-gateway
+  component: security
+  version: v1.0.0
+  managed-by: terraform
+
+commonAnnotations:
+  config.kubernetes.io/origin: "gateway-security"
+
+# Namespace for all resources
+namespace: microservices

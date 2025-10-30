@@ -1,0 +1,85 @@
+
+# Environment-specific routing settings for production
+
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: microservices-routes
+  namespace: microservices
+  labels:
+    environment: prod
+    deployment-target: production
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+    routing.gateway.io/environment: "production"
+spec:
+  parentRefs:
+  - name: microservices-gateway
+    namespace: microservices
+  hostnames:
+  - "api.microservices.ecp-project-476405.com"
+  - "microservices.ecp-project-476405.com"
+  rules:
+  # Enhanced production routing with additional headers
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/customers
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Environment"
+          value: "production"
+        - name: "X-Gateway-Source"
+          value: "gateway-repository"
+        - name: "X-Load-Balancer"
+          value: "gke-gateway"
+        - name: "X-SSL-Enabled"
+          value: "true"
+  
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/products
+    backendRefs:
+    - name: catalog-management-service
+      port: 8082
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Environment"
+          value: "production"
+        - name: "X-Gateway-Source"
+          value: "gateway-repository"
+        - name: "X-Load-Balancer"
+          value: "gke-gateway"
+        - name: "X-SSL-Enabled"
+          value: "true"
+  
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/orders
+    backendRefs:
+    - name: order-management-service
+      port: 8083
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Environment"
+          value: "production"
+        - name: "X-Gateway-Source"
+          value: "gateway-repository"
+        - name: "X-Load-Balancer"
+          value: "gke-gateway"
+        - name: "X-SSL-Enabled"
+          value: "true"

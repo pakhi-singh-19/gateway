@@ -1,0 +1,90 @@
+# Environment-specific routing settings for staging
+
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: microservices-routes
+  namespace: microservices-staging
+  labels:
+    environment: staging
+    deployment-target: staging
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+    routing.gateway.io/environment: "staging"
+spec:
+  parentRefs:
+  - name: microservices-gateway
+    namespace: microservices-staging
+  hostnames:
+  - "staging-api.microservices.ecp-project-476405.com"
+  - "staging-microservices.ecp-project-476405.com"
+  rules:
+  # Staging routing with testing headers
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/customers
+    backendRefs:
+    - name: customer-management-service
+      port: 8081
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Environment"
+          value: "staging"
+        - name: "X-Gateway-Source"
+          value: "gateway-repository"
+        - name: "X-Load-Balancer"
+          value: "gke-gateway"
+        - name: "X-SSL-Enabled"
+          value: "true"
+        - name: "X-Testing-Mode"
+          value: "enabled"
+  
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/products
+    backendRefs:
+    - name: catalog-management-service
+      port: 8082
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Environment"
+          value: "staging"
+        - name: "X-Gateway-Source"
+          value: "gateway-repository"
+        - name: "X-Load-Balancer"
+          value: "gke-gateway"
+        - name: "X-SSL-Enabled"
+          value: "true"
+        - name: "X-Testing-Mode"
+          value: "enabled"
+  
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/v1/orders
+    backendRefs:
+    - name: order-management-service
+      port: 8083
+      weight: 100
+    filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        add:
+        - name: "X-Environment"
+          value: "staging"
+        - name: "X-Gateway-Source"
+          value: "gateway-repository"
+        - name: "X-Load-Balancer"
+          value: "gke-gateway"
+        - name: "X-SSL-Enabled"
+          value: "true"
+        - name: "X-Testing-Mode"
+          value: "enabled"
