@@ -6,10 +6,11 @@ resources:
 - pod-security-policies.yaml
 - rbac.yaml
 
-commonLabels:
-  app: api-gateway
-  component: security
-  version: v1.0.0
+labels:
+- pairs:
+    app: api-gateway
+    component: security
+    version: v1.0.0
 
 commonAnnotations:
   config.kubernetes.io/origin: "gateway-security"

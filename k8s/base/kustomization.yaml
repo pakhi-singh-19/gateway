@@ -17,9 +17,10 @@ resources:
 - backend-config.yaml
 
 labels:
-  app: api-gateway
-  component: gateway-api
-  version: v1.0.0
+- pairs:
+    app: api-gateway
+    component: gateway-api
+    version: v1.0.0
 
 commonAnnotations:
   config.kubernetes.io/origin: "gateway-repository"

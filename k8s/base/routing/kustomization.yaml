@@ -9,10 +9,11 @@ resources:
 - catalog-routes.yaml
 - order-routes.yaml
 
-commonLabels:
-  app: api-gateway
-  component: routing
-  version: v1.0.0
+labels:
+- pairs:
+    app: api-gateway
+    component: routing
+    version: v1.0.0
 
 commonAnnotations:
   config.kubernetes.io/origin: "gateway-repository"
