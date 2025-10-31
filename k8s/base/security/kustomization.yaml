@@ -10,17 +10,18 @@ metadata:
     managed-by: terraform
 
 resources:
-- security-policies.yaml
+- pod-security-policies.yaml
 - rbac.yaml
 
-commonLabels:
-  app: api-gateway
-  component: security
-  version: v1.0.0
-  managed-by: terraform
+labels:
+  - pairs:
+      app: api-gateway
+      component: security
+      version: v1.0.0
+      managed-by: terraform
 
-commonAnnotations:
-  config.kubernetes.io/origin: "gateway-security"
+annotations:
+  - pairs:
+      config.kubernetes.io/origin: "gateway-security"
 
-# Namespace for all resources
 namespace: microservices

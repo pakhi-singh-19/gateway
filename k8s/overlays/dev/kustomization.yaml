@@ -1,6 +1,4 @@
 # Development Environment Overlay for Gateway
-# Updated to reflect segregated gateway configuration
-
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -19,20 +17,21 @@ resources:
 
 namespace: microservices-dev
 
-commonLabels:
-  environment: dev
-  deployment-target: development
+labels:
+  - pairs:
+      environment: dev
+      deployment-target: development
 
-commonAnnotations:
-  environment: development
-  gateway.config.kubernetes.io/segregated: "true"
-  gateway.config.kubernetes.io/source: "gateway-repository"
+annotations:
+  - pairs:
+      environment: development
+      gateway.config.kubernetes.io/segregated: "true"
+      gateway.config.kubernetes.io/source: "gateway-repository"
 
-patchesStrategicMerge:
-- gateway-patch.yaml
-- httproute-patch.yaml
+patches:
+- path: gateway-patch.yaml
+- path: httproute-patch.yaml
 
-# Environment-specific configurations
 configMapGenerator:
 - name: gateway-config
   behavior: merge
@@ -46,7 +45,6 @@ configMapGenerator:
   - gateway_domain=dev-api.microservices.ecp-project-476405.com
   - backup_domain=dev-microservices.ecp-project-476405.com
 
-# Development-specific secret configurations
 secretGenerator:
 - name: gateway-dev-secrets
   literals:
