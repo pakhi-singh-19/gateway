@@ -67,6 +67,44 @@ pipeline {
             }
         }
         
+        stage('Install Required CRDs') {
+            steps {
+                script {
+                    sh '''
+                        echo "Installing required CRDs..."
+                        
+                        # Check if Gateway API CRDs are already installed
+                        if ! kubectl get crd gateways.gateway.networking.k8s.io >/dev/null 2>&1; then
+                            echo "Installing Gateway API CRDs..."
+                            kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.0.0/standard-install.yaml
+                            
+                            # Wait for CRDs to be established
+                            echo "Waiting for Gateway API CRDs to be ready..."
+                            kubectl wait --for condition=established --timeout=60s crd/gateways.gateway.networking.k8s.io
+                            kubectl wait --for condition=established --timeout=60s crd/httproutes.gateway.networking.k8s.io
+                        else
+                            echo "Gateway API CRDs already installed"
+                        fi
+                        
+                        # Check for GKE-specific CRDs
+                        if ! kubectl get crd backendconfigs.cloud.google.com >/dev/null 2>&1; then
+                            echo "Warning: GKE BackendConfig CRD not found - may need GKE Gateway API enabled"
+                        fi
+                        
+                        if ! kubectl get crd frontendconfigs.networking.gke.io >/dev/null 2>&1; then
+                            echo "Warning: GKE FrontendConfig CRD not found - may need GKE Gateway API enabled"
+                        fi
+                        
+                        # List installed Gateway API CRDs
+                        echo "Installed Gateway API CRDs:"
+                        kubectl get crd | grep -E "(gateway|route)" || echo "No Gateway API CRDs found"
+                        
+                        echo "CRD installation completed"
+                    '''
+                }
+            }
+        }
+        
         stage('Validate Gateway Configuration') {
             steps {
                 script {
@@ -77,9 +115,13 @@ pipeline {
                         echo "Generating manifests for ${TARGET_ENV} environment..."
                         kubectl kustomize k8s/overlays/${TARGET_ENV} > /tmp/gateway-manifests-${TARGET_ENV}.yaml
                         
+                        # Remove PodSecurityPolicy from manifests (deprecated in Kubernetes 1.25+)
+                        echo "Removing deprecated PodSecurityPolicy resources..."
+                        grep -v -A 20 -B 5 "kind: PodSecurityPolicy" /tmp/gateway-manifests-${TARGET_ENV}.yaml > /tmp/gateway-manifests-${TARGET_ENV}-filtered.yaml || cp /tmp/gateway-manifests-${TARGET_ENV}.yaml /tmp/gateway-manifests-${TARGET_ENV}-filtered.yaml
+                        
                         # Validate YAML syntax with client-side validation only
                         echo "Validating YAML syntax..."
-                        kubectl apply --dry-run=client --validate=false -f /tmp/gateway-manifests-${TARGET_ENV}.yaml
+                        kubectl apply --dry-run=client --validate=false -f /tmp/gateway-manifests-${TARGET_ENV}-filtered.yaml
                         
                         # Check for required resources
                         echo "Checking for required Gateway API resources..."
@@ -167,8 +209,8 @@ pipeline {
                         kubectl create namespace ${TARGET_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
                         
                         # Apply Gateway API configurations with proper validation settings
-                        echo "Applying Gateway manifests..."
-                        kubectl apply -k k8s/overlays/${TARGET_ENV} --validate=false --timeout=300s
+                        echo "Applying Gateway manifests (excluding deprecated resources)..."
+                        kubectl apply -f /tmp/gateway-manifests-${TARGET_ENV}-filtered.yaml --validate=false --timeout=300s
                         
                         # Wait for Gateway to be ready
                         echo "Waiting for Gateway to be ready..."
@@ -238,12 +280,6 @@ pipeline {
         }
         
         stage('Health Check') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'develop'
-                }
-            }
             steps {
                 script {
                     sh '''
@@ -278,12 +314,6 @@ pipeline {
         }
         
         stage('Smoke Tests') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'develop'
-                }
-            }
             steps {
                 script {
                     sh '''
@@ -321,79 +351,4 @@ pipeline {
         }
     }
     
-    // post {
-    //     always {
-    //         script {
-    //             // Archive Gateway manifests
-    //             sh 'ls -la /tmp/gateway-manifests-*.yaml 2>/dev/null || echo "No manifest files to archive"'
-    //             archiveArtifacts artifacts: '/tmp/gateway-manifests-*.yaml', allowEmptyArchive: true
-                
-    //             // Collect deployment logs
-    //             sh '''
-    //                 echo "Collecting deployment information..."
-    //                 kubectl get all -n ${TARGET_NAMESPACE} -l app=api-gateway > /tmp/gateway-resources.log 2>&1 || echo "Failed to collect resources"
-    //                 kubectl describe gateway ${GATEWAY_NAME} -n ${TARGET_NAMESPACE} > /tmp/gateway-description.log 2>&1 || echo "Failed to describe gateway"
-    //                 kubectl get events -n ${TARGET_NAMESPACE} --sort-by='.lastTimestamp' > /tmp/gateway-events.log 2>&1 || echo "Failed to collect events"
-    //             '''
-    //             archiveArtifacts artifacts: '/tmp/gateway-*.log', allowEmptyArchive: true
-    //         }
-            
-    //         // Clean workspace
-    //         cleanWs()
-    //     }
-    //     success {
-    //         echo "✅ Gateway deployment completed successfully for ${TARGET_ENV} environment!"
-    //         // Send success notification
-    //         emailext(
-    //             subject: "✅ SUCCESS: Gateway Configuration - Build #${BUILD_NUMBER} (${TARGET_ENV})",
-    //             body: """<p><strong>Gateway configuration deployment successful for ${TARGET_ENV} environment</strong></p>
-    //                      <ul>
-    //                      <li><strong>Version:</strong> ${GATEWAY_VERSION}</li>
-    //                      <li><strong>Author:</strong> ${GIT_AUTHOR}</li>
-    //                      <li><strong>Commit:</strong> ${GIT_COMMIT_MSG}</li>
-    //                      <li><strong>Namespace:</strong> ${TARGET_NAMESPACE}</li>
-    //                      <li><strong>Gateway:</strong> ${GATEWAY_NAME}</li>
-    //                      <li><strong>Domain:</strong> ${GATEWAY_DOMAIN}</li>
-    //                      </ul>
-    //                      <p>Check console output at <a href='${BUILD_URL}'>${BUILD_URL}</a></p>""",
-    //             to: '${DEFAULT_RECIPIENTS}',
-    //             mimeType: 'text/html'
-    //         )
-    //     }
-    //     failure {
-    //         echo "❌ Gateway deployment failed for ${TARGET_ENV} environment!"
-    //         // Send failure notification
-    //         emailext(
-    //             subject: "❌ FAILURE: Gateway Configuration - Build #${BUILD_NUMBER} (${TARGET_ENV})",
-    //             body: """<p><strong>Gateway configuration deployment failed for ${TARGET_ENV} environment</strong></p>
-    //                      <ul>
-    //                      <li><strong>Version:</strong> ${GATEWAY_VERSION}</li>
-    //                      <li><strong>Author:</strong> ${GIT_AUTHOR}</li>
-    //                      <li><strong>Commit:</strong> ${GIT_COMMIT_MSG}</li>
-    //                      <li><strong>Target Namespace:</strong> ${TARGET_NAMESPACE}</li>
-    //                      <li><strong>Gateway:</strong> ${GATEWAY_NAME}</li>
-    //                      </ul>
-    //                      <p>Check console output at <a href='${BUILD_URL}'>${BUILD_URL}</a></p>
-    //                      <p>Check archived logs for detailed error information.</p>""",
-    //             to: '${DEFAULT_RECIPIENTS}',
-    //             mimeType: 'text/html'
-    //         )
-    //     }
-    //     unstable {
-    //         echo "⚠️ Gateway deployment is unstable for ${TARGET_ENV} environment!"
-    //         emailext(
-    //             subject: "⚠️ UNSTABLE: Gateway Configuration - Build #${BUILD_NUMBER} (${TARGET_ENV})",
-    //             body: """<p><strong>Gateway configuration deployment is unstable for ${TARGET_ENV} environment</strong></p>
-    //                      <ul>
-    //                      <li><strong>Version:</strong> ${GATEWAY_VERSION}</li>
-    //                      <li><strong>Author:</strong> ${GIT_AUTHOR}</li>
-    //                      <li><strong>Commit:</strong> ${GIT_COMMIT_MSG}</li>
-    //                      <li><strong>Namespace:</strong> ${TARGET_NAMESPACE}</li>
-    //                      </ul>
-    //                      <p>Check console output at <a href='${BUILD_URL}'>${BUILD_URL}</a></p>""",
-    //             to: '${DEFAULT_RECIPIENTS}',
-    //             mimeType: 'text/html'
-    //         )
-    //     }
-    // }
 }

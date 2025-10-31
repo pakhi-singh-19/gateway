@@ -1,0 +1,175 @@
+# Network Security Policy for API Gateway
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-gateway-network-policy
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+    version: v1.0.0
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+spec:
+  podSelector:
+    matchLabels:
+      app: api-gateway
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from external load balancer
+  - from: []
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+  # Allow traffic from same namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: microservices
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  # Allow traffic to backend services
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: microservices
+    ports:
+    - protocol: TCP
+      port: 8081  # Customer service
+    - protocol: TCP
+      port: 8082  # Catalog service
+    - protocol: TCP
+      port: 8083  # Order service
+  # Allow DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow HTTPS egress for external APIs
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+---
+# Security Context Template for Gateway Pods
+# This serves as documentation for required security contexts
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-security-context
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+    version: v1.0.0
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+    description: "Security context requirements for Gateway API pods"
+data:
+  security-context.yaml: |
+    # Apply this security context to Gateway API pods
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65534
+      runAsGroup: 65534
+      fsGroup: 65534
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 65534
+      runAsGroup: 65534
+      capabilities:
+        drop:
+        - ALL
+      seccompProfile:
+        type: RuntimeDefault
+---
+# Pod Disruption Budget for Gateway High Availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway-pdb
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+    version: v1.0.0
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+---
+# Resource Quota for Gateway Namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gateway-resource-quota
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+    version: v1.0.0
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    pods: "10"
+    services: "5"
+    secrets: "10"
+    configmaps: "10"
+    persistentvolumeclaims: "0"
+---
+# Limit Range for Gateway Pods
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gateway-limit-range
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: security
+    managed-by: terraform
+    version: v1.0.0
+  annotations:
+    config.kubernetes.io/origin: "gateway-repository"
+spec:
+  limits:
+  - type: Container
+    default:
+      cpu: 500m
+      memory: 512Mi
+    defaultRequest:
+      cpu: 100m
+      memory: 128Mi
+    max:
+      cpu: "2"
+      memory: 2Gi
+    min:
+      cpu: 50m
+      memory: 64Mi
+  - type: Pod
+    max:
+      cpu: "4"
+      memory: 4Gi
