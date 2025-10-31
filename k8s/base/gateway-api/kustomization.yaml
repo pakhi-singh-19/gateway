@@ -21,17 +21,3 @@ commonAnnotations:
 
 # Namespace for all gateway resources
 namespace: microservices
-
-# Configuration for gateway-specific settings
-configMapGenerator:
-- name: gateway-config
-  literals:
-  - gateway_version=v1.0.0
-  - repository=gateway-repo
-
-# Generate secrets for gateway operations
-secretGenerator:
-- name: gateway-secrets
-  literals:
-  - gateway_key=placeholder
-  type: Opaque

@@ -20,12 +20,3 @@ commonAnnotations:
   routing.gateway.io/source: "gateway-repository"
 
 namespace: microservices
-
-configMapGenerator:
-  - name: routing-config
-    literals:
-      - routing_version=v1.0.0
-      - customer_service_port=8081
-      - catalog_service_port=8082
-      - order_service_port=8083
-      - gateway_domain=api.microservices.ecp-project-476405.com
