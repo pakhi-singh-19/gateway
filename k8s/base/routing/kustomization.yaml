@@ -4,16 +4,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-metadata:
-  name: gateway-routing
-  labels:
-    app: api-gateway
-    component: routing
-    managed-by: terraform
-  annotations:
-    config.kubernetes.io/origin: "gateway-repository"
-    segregated-from: "customer-management-service"
-
 resources:
 - customer-routes.yaml
 - catalog-routes.yaml
@@ -23,24 +13,18 @@ commonLabels:
   app: api-gateway
   component: routing
   version: v1.0.0
-  managed-by: terraform
 
 commonAnnotations:
   config.kubernetes.io/origin: "gateway-repository"
-  routing.gateway.io/segregated: "true"
   routing.gateway.io/source: "gateway-repository"
 
-# Namespace for all routing resources
 namespace: microservices
 
-# Configuration for routing-specific settings
 configMapGenerator:
-- name: routing-config
-  literals:
-  - routing_version=v1.0.0
-  - customer_service_port=8081
-  - catalog_service_port=8082
-  - order_service_port=8083
-  - gateway_domain=api.microservices.ecp-project-476405.com
-  - managed_by=terraform
-  - segregated_from=customer-management-service
+  - name: routing-config
+    literals:
+      - routing_version=v1.0.0
+      - customer_service_port=8081
+      - catalog_service_port=8082
+      - order_service_port=8083
+      - gateway_domain=api.microservices.ecp-project-476405.com

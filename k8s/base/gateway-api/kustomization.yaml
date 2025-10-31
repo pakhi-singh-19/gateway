@@ -4,15 +4,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-metadata:
-  name: gateway-api-base
-  labels:
-    app: api-gateway
-    component: gateway-api
-    managed-by: terraform
-  annotations:
-    config.kubernetes.io/origin: "gateway-repository"
-
 resources:
 - gateway.yaml
 - httproute.yaml
@@ -22,7 +13,6 @@ commonLabels:
   app: api-gateway
   component: gateway-api
   version: v1.0.0
-  managed-by: terraform
 
 commonAnnotations:
   config.kubernetes.io/origin: "gateway-repository"
@@ -36,9 +26,7 @@ configMapGenerator:
 - name: gateway-config
   literals:
   - gateway_version=v1.0.0
-  - managed_by=terraform
   - repository=gateway-repo
-  - last_updated=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Generate secrets for gateway operations
 secretGenerator:

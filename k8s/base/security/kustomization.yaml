@@ -2,26 +2,16 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-metadata:
-  name: gateway-security-base
-  labels:
-    app: api-gateway
-    component: security
-    managed-by: terraform
-
 resources:
 - pod-security-policies.yaml
 - rbac.yaml
 
-labels:
-  - pairs:
-      app: api-gateway
-      component: security
-      version: v1.0.0
-      managed-by: terraform
+commonLabels:
+  app: api-gateway
+  component: security
+  version: v1.0.0
 
-annotations:
-  - pairs:
-      config.kubernetes.io/origin: "gateway-security"
+commonAnnotations:
+  config.kubernetes.io/origin: "gateway-security"
 
 namespace: microservices

@@ -1,36 +1,40 @@
 # # Base Kustomization for Gateway
-
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-metadata:
-  name: gateway-base
-  labels:
-    app: api-gateway
-    managed-by: terraform
+# metadata:
+#   name: gateway-api-base
+#   labels:
+#     app: api-gateway
+#     component: gateway-api
+#     managed-by: terraform
+#   annotations:
+#     config.kubernetes.io/origin: "gateway-repository"
+
+resources:
+- gateway.yaml
+- httproute.yaml
+- backend-config.yaml
+
+commonLabels:
+  app: api-gateway
+  component: gateway-api
+  version: v1.0.0
+
+commonAnnotations:
+  config.kubernetes.io/origin: "gateway-repository"
+  deployment.kubernetes.io/revision: "1"
 
 namespace: microservices
 
-resources:
-  - namespace.yaml
-  - gateway-api/
-  - routing/
-  - security/
-
-labels:
-  - pairs:
-      app: api-gateway
-      version: v1.0.0
-      managed-by: terraform
-
-annotations:
-  - pairs:
-      config.kubernetes.io/origin: "gateway-repository"
-      deployment.kubernetes.io/revision: "1"
-
 configMapGenerator:
-- name: gateway-base-config
+- name: gateway-config
   literals:
-  - environment=base
   - gateway_version=v1.0.0
-  - managed_by=terraform
+  - repository=gateway-repo
+
+secretGenerator:
+- name: gateway-secrets
+  literals:
+  - gateway_key=placeholder
+  type: Opaque

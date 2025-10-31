@@ -2,31 +2,20 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-metadata:
-  name: gateway-dev
-  labels:
-    app: api-gateway
-    environment: dev
-    managed-by: terraform
-  annotations:
-    config.kubernetes.io/origin: "gateway-repository"
-    segregated-from: "customer-management-service"
-
 resources:
 - ../../base
 
 namespace: microservices-dev
 
-labels:
-  - pairs:
-      environment: dev
-      deployment-target: development
+commonLabels:
+  app: api-gateway
+  environment: dev
+  deployment-target: development
 
-annotations:
-  - pairs:
-      environment: development
-      gateway.config.kubernetes.io/segregated: "true"
-      gateway.config.kubernetes.io/source: "gateway-repository"
+commonAnnotations:
+  config.kubernetes.io/origin: "gateway-repository"
+  environment: development
+  gateway.config.kubernetes.io/source: "gateway-repository"
 
 patches:
 - path: gateway-patch.yaml

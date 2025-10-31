@@ -2,31 +2,20 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-metadata:
-  name: gateway-staging
-  labels:
-    app: api-gateway
-    environment: staging
-    managed-by: terraform
-  annotations:
-    config.kubernetes.io/origin: "gateway-repository"
-    segregated-from: "customer-management-service"
-
 resources:
 - ../../base
 
 namespace: microservices-staging
 
-labels:
-  - pairs:
-      environment: staging
-      deployment-target: staging
+commonLabels:
+  app: api-gateway
+  environment: staging
+  deployment-target: staging
 
-annotations:
-  - pairs:
-      environment: staging
-      gateway.config.kubernetes.io/segregated: "true"
-      gateway.config.kubernetes.io/source: "gateway-repository"
+commonAnnotations:
+  config.kubernetes.io/origin: "gateway-repository"
+  environment: staging
+  gateway.config.kubernetes.io/source: "gateway-repository"
 
 patches:
 - path: gateway-patch.yaml
