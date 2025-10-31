@@ -1,5 +1,7 @@
-# Base Kustomization for Gateway
-# Updated to reflect segregated gateway configuration
+# # Base Kustomization for Gateway
+# # Updated to reflect segregated gateway configuration
+
+# Base configuration for Gateway API
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -9,44 +11,62 @@ metadata:
   labels:
     app: api-gateway
     managed-by: terraform
-    version: v1.0.0
-  annotations:
-    config.kubernetes.io/origin: "gateway-repository"
-    segregated-from: "customer-management-service"
 
-resources:
-- namespace.yaml
-- gateway-api/
-- routing/
-- security/
-
-commonLabels:
-  app: api-gateway
-  version: v1.0.0
-  managed-by: terraform
-  repository: gateway-repo
-
-commonAnnotations:
-  config.kubernetes.io/origin: "gateway-repository"
-  deployment.kubernetes.io/revision: "1"
-  segregated-from: "customer-management-service"
-  last-updated: "2024-01-01T00:00:00Z"
-
-# Namespace for all resources
 namespace: microservices
 
-# Configuration for gateway deployment
-configMapGenerator:
-- name: gateway-base-config
-  literals:
-  - environment=base
-  - gateway_version=v1.0.0
-  - managed_by=terraform
-  - repository=gateway-repo
-  - segregation_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+resources:
+  - gateway.yaml
+  - httproute.yaml
+  - security/
+  - routing/
 
-# Images configuration (if needed for gateway components)
-images:
-- name: gateway-controller
-  newName: gcr.io/gke-release/gateway-controller
-  newTag: latest
+
+
+# apiVersion: kustomize.config.k8s.io/v1beta1
+# kind: Kustomization
+
+# metadata:
+#   name: gateway-base
+#   labels:
+#     app: api-gateway
+#     managed-by: terraform
+#   annotations:
+#     config.kubernetes.io/origin: "gateway-repository"
+#     segregated-from: "customer-management-service"
+
+# resources:
+# - namespace.yaml
+# - gateway-api/
+# - routing/
+# - security/
+
+# commonLabels:
+#   app: api-gateway
+#   version: v1.0.0
+#   managed-by: terraform
+#   repository: gateway-repo
+
+# commonAnnotations:
+#   config.kubernetes.io/origin: "gateway-repository"
+#   deployment.kubernetes.io/revision: "1"
+#   segregated-from: "customer-management-service"
+#   last-updated: "2024-01-01T00:00:00Z"
+
+# # Namespace for all resources
+# namespace: microservices
+
+# # Configuration for gateway deployment
+# configMapGenerator:
+# - name: gateway-base-config
+#   literals:
+#   - environment=base
+#   - gateway_version=v1.0.0
+#   - managed_by=terraform
+#   - repository=gateway-repo
+#   - segregation_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# # Images configuration (if needed for gateway components)
+# images:
+# - name: gateway-controller
+#   newName: gcr.io/gke-release/gateway-controller
+#   newTag: latest
