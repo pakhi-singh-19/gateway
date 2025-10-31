@@ -15,7 +15,6 @@ labels:
     version: v1.0.0
 
 commonAnnotations:
-  config.kubernetes.io/origin: "gateway-repository"
   deployment.kubernetes.io/revision: "1"
 
 namespace: microservices
