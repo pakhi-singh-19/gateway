@@ -6,7 +6,7 @@ resources:
 - namespace.yaml
 - gateway-api/
 - routing/
-- security/
+# - security/
 
 labels:
 - pairs:
