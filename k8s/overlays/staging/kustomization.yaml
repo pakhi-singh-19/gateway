@@ -7,10 +7,11 @@ resources:
 
 namespace: microservices-staging
 
-commonLabels:
-  app: api-gateway
-  environment: staging
-  deployment-target: staging
+labels:
+- pairs:
+    app: api-gateway
+    environment: staging
+    deployment-target: staging
 
 commonAnnotations:
   config.kubernetes.io/origin: "gateway-repository"

@@ -16,7 +16,7 @@ resources:
 - httproute.yaml
 - backend-config.yaml
 
-commonLabels:
+labels:
   app: api-gateway
   component: gateway-api
   version: v1.0.0

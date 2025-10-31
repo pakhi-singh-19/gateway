@@ -8,10 +8,11 @@ resources:
 
 namespace: microservices
 
-commonLabels:
-  app: api-gateway
-  environment: prod
-  deployment-target: production
+labels:
+- pairs:
+    app: api-gateway
+    environment: prod
+    deployment-target: production
 
 commonAnnotations:
   config.kubernetes.io/origin: "gateway-repository"

@@ -7,10 +7,11 @@ resources:
 
 namespace: microservices-dev
 
-commonLabels:
-  app: api-gateway
-  environment: dev
-  deployment-target: development
+labels:
+- pairs:
+    app: api-gateway
+    environment: dev
+    deployment-target: development
 
 commonAnnotations:
   config.kubernetes.io/origin: "gateway-repository"
