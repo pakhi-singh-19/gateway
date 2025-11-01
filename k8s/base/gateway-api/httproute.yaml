@@ -67,92 +67,92 @@ spec:
           value: "v1.0.0"
 
   # Catalog Management Service Routes
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/products
-    - headers:
-      - name: "Content-Type"
-        value: "application/json"
-    backendRefs:
-    - name: catalog-management-service
-      port: 8082
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Service-Route"
-          value: "catalog-service"
-        - name: "X-Gateway-Timestamp"
-          value: "#{timestamp}"
-        - name: "X-Gateway-Version"
-          value: "v1.0.0"
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /api/v1/products
+  #   - headers:
+  #     - name: "Content-Type"
+  #       value: "application/json"
+  #   backendRefs:
+  #   - name: catalog-management-service
+  #     port: 8082
+  #     weight: 100
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       add:
+  #       - name: "X-Service-Route"
+  #         value: "catalog-service"
+  #       - name: "X-Gateway-Timestamp"
+  #         value: "#{timestamp}"
+  #       - name: "X-Gateway-Version"
+  #         value: "v1.0.0"
 
-  # Catalog GraphQL endpoint
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/products/graphql
-    - headers:
-      - name: "Content-Type"
-        value: "application/json"
-    backendRefs:
-    - name: catalog-management-service
-      port: 8082
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Service-Route"
-          value: "catalog-graphql"
-        - name: "X-Gateway-Version"
-          value: "v1.0.0"
+  # # Catalog GraphQL endpoint
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /api/v1/products/graphql
+  #   - headers:
+  #     - name: "Content-Type"
+  #       value: "application/json"
+  #   backendRefs:
+  #   - name: catalog-management-service
+  #     port: 8082
+  #     weight: 100
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       add:
+  #       - name: "X-Service-Route"
+  #         value: "catalog-graphql"
+  #       - name: "X-Gateway-Version"
+  #         value: "v1.0.0"
 
   # Order Management Service Routes
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/orders
-    - headers:
-      - name: "Content-Type"
-        value: "application/json"
-    backendRefs:
-    - name: order-management-service
-      port: 8083
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Service-Route"
-          value: "order-service"
-        - name: "X-Gateway-Timestamp"
-          value: "#{timestamp}"
-        - name: "X-Gateway-Version"
-          value: "v1.0.0"
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /api/v1/orders
+  #   - headers:
+  #     - name: "Content-Type"
+  #       value: "application/json"
+  #   backendRefs:
+  #   - name: order-management-service
+  #     port: 8083
+  #     weight: 100
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       add:
+  #       - name: "X-Service-Route"
+  #         value: "order-service"
+  #       - name: "X-Gateway-Timestamp"
+  #         value: "#{timestamp}"
+  #       - name: "X-Gateway-Version"
+  #         value: "v1.0.0"
 
-  # Order GraphQL endpoint
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/orders/graphql
-    - headers:
-      - name: "Content-Type"
-        value: "application/json"
-    backendRefs:
-    - name: order-management-service
-      port: 8083
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Service-Route"
-          value: "order-graphql"
-        - name: "X-Gateway-Version"
-          value: "v1.0.0"
+  # # Order GraphQL endpoint
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /api/v1/orders/graphql
+  #   - headers:
+  #     - name: "Content-Type"
+  #       value: "application/json"
+  #   backendRefs:
+  #   - name: order-management-service
+  #     port: 8083
+  #     weight: 100
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       add:
+  #       - name: "X-Service-Route"
+  #         value: "order-graphql"
+  #       - name: "X-Gateway-Version"
+  #         value: "v1.0.0"
 
   # Health check endpoints (load balanced across all services)
   - matches:
@@ -163,12 +163,12 @@ spec:
     - name: customer-management-service
       port: 8081
       weight: 33
-    - name: catalog-management-service
-      port: 8082
-      weight: 33
-    - name: order-management-service
-      port: 8083
-      weight: 34
+    # - name: catalog-management-service
+    #   port: 8082
+    #   weight: 33
+    # - name: order-management-service
+    #   port: 8083
+    #   weight: 34
     filters:
     - type: RequestHeaderModifier
       requestHeaderModifier:

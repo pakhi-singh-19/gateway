@@ -42,44 +42,44 @@ spec:
         - name: "X-SSL-Enabled"
           value: "false"
   
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/products
-    backendRefs:
-    - name: catalog-management-service
-      port: 8082
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Environment"
-          value: "development"
-        - name: "X-Gateway-Source"
-          value: "gateway-repository"
-        - name: "X-Debug-Mode"
-          value: "enabled"
-        - name: "X-SSL-Enabled"
-          value: "false"
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /api/v1/products
+  #   backendRefs:
+  #   - name: catalog-management-service
+  #     port: 8082
+  #     weight: 100
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       add:
+  #       - name: "X-Environment"
+  #         value: "development"
+  #       - name: "X-Gateway-Source"
+  #         value: "gateway-repository"
+  #       - name: "X-Debug-Mode"
+  #         value: "enabled"
+  #       - name: "X-SSL-Enabled"
+  #         value: "false"
   
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/orders
-    backendRefs:
-    - name: order-management-service
-      port: 8083
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Environment"
-          value: "development"
-        - name: "X-Gateway-Source"
-          value: "gateway-repository"
-        - name: "X-Debug-Mode"
-          value: "enabled"
-        - name: "X-SSL-Enabled"
-          value: "false"
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /api/v1/orders
+  #   backendRefs:
+  #   - name: order-management-service
+  #     port: 8083
+  #     weight: 100
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       add:
+  #       - name: "X-Environment"
+  #         value: "development"
+  #       - name: "X-Gateway-Source"
+  #         value: "gateway-repository"
+  #       - name: "X-Debug-Mode"
+  #         value: "enabled"
+  #       - name: "X-SSL-Enabled"
+  #         value: "false"

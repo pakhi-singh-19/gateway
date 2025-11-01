@@ -1,7 +1,7 @@
 
 # Environment-specific routing settings for production
 
-apiVersion: gateway.networking.k8s.io/v1beta1
+apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: microservices-routes
@@ -42,44 +42,44 @@ spec:
         - name: "X-SSL-Enabled"
           value: "true"
   
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/products
-    backendRefs:
-    - name: catalog-management-service
-      port: 8082
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Environment"
-          value: "production"
-        - name: "X-Gateway-Source"
-          value: "gateway-repository"
-        - name: "X-Load-Balancer"
-          value: "gke-gateway"
-        - name: "X-SSL-Enabled"
-          value: "true"
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /api/v1/products
+  #   backendRefs:
+  #   - name: catalog-management-service
+  #     port: 8082
+  #     weight: 100
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       add:
+  #       - name: "X-Environment"
+  #         value: "production"
+  #       - name: "X-Gateway-Source"
+  #         value: "gateway-repository"
+  #       - name: "X-Load-Balancer"
+  #         value: "gke-gateway"
+  #       - name: "X-SSL-Enabled"
+  #         value: "true"
   
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/orders
-    backendRefs:
-    - name: order-management-service
-      port: 8083
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Environment"
-          value: "production"
-        - name: "X-Gateway-Source"
-          value: "gateway-repository"
-        - name: "X-Load-Balancer"
-          value: "gke-gateway"
-        - name: "X-SSL-Enabled"
-          value: "true"
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: /api/v1/orders
+  #   backendRefs:
+  #   - name: order-management-service
+  #     port: 8083
+  #     weight: 100
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       add:
+  #       - name: "X-Environment"
+  #         value: "production"
+  #       - name: "X-Gateway-Source"
+  #         value: "gateway-repository"
+  #       - name: "X-Load-Balancer"
+  #         value: "gke-gateway"
+  #       - name: "X-SSL-Enabled"
+  #         value: "true"
