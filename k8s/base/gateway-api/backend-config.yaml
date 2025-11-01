@@ -21,7 +21,7 @@ spec:
     unhealthyThreshold: 3
     type: HTTP
     requestPath: /actuator/health
-    port: 8080
+    port: 8081
   
   # Session affinity for stateful operations
   sessionAffinity:

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: customer-management-service
+  namespace: microservices
+spec:
+  type: ExternalName
+  externalName: customer-management-service.customer-management.svc.cluster.local

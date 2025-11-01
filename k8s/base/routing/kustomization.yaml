@@ -6,8 +6,8 @@ kind: Kustomization
 
 resources:
 - customer-routes.yaml
-- catalog-routes.yaml
-- order-routes.yaml
+# - catalog-routes.yaml
+# - order-routes.yaml
 
 labels:
 - pairs:
