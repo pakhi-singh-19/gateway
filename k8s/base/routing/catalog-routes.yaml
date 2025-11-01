@@ -1,89 +1,89 @@
-# Catalog Management Service Routing Configuration
-# Segregated routing rules for catalog-related endpoints
+# # Catalog Management Service Routing Configuration
+# # Segregated routing rules for catalog-related endpoints
 
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: HTTPRoute
-metadata:
-  name: catalog-service-routes
-  namespace: microservices
-  labels:
-    app: api-gateway
-    component: routing
-    service: catalog-management
-    managed-by: terraform
-  annotations:
-    config.kubernetes.io/origin: "gateway-repository"
-    service.kubernetes.io/target: "catalog-management-service"
-spec:
-  parentRefs:
-  - name: microservices-gateway
-    namespace: microservices
-  hostnames:
-  - "api.microservices.ecp-project-476405.com"
-  - "microservices.ecp-project-476405.com"
-  rules:
-  # Catalog REST API endpoints
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/products
-    - headers:
-      - name: "Content-Type"
-        value: "application/json"
-    backendRefs:
-    - name: catalog-management-service
-      port: 8082
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Service-Route"
-          value: "catalog-service"
-        - name: "X-Gateway-Timestamp"
-          value: "#{timestamp}"
-        - name: "X-Service-Version"
-          value: "v1.0.0"
-        - name: "X-Routing-Source"
-          value: "gateway-repository"
+# apiVersion: gateway.networking.k8s.io/v1beta1
+# kind: HTTPRoute
+# metadata:
+#   name: catalog-service-routes
+#   namespace: microservices
+#   labels:
+#     app: api-gateway
+#     component: routing
+#     service: catalog-management
+#     managed-by: terraform
+#   annotations:
+#     config.kubernetes.io/origin: "gateway-repository"
+#     service.kubernetes.io/target: "catalog-management-service"
+# spec:
+#   parentRefs:
+#   - name: microservices-gateway
+#     namespace: microservices
+#   hostnames:
+#   - "api.microservices.ecp-project-476405.com"
+#   - "microservices.ecp-project-476405.com"
+#   rules:
+#   # Catalog REST API endpoints
+#   - matches:
+#     - path:
+#         type: PathPrefix
+#         value: /api/v1/products
+#     - headers:
+#       - name: "Content-Type"
+#         value: "application/json"
+#     backendRefs:
+#     - name: catalog-management-service
+#       port: 8082
+#       weight: 100
+#     filters:
+#     - type: RequestHeaderModifier
+#       requestHeaderModifier:
+#         add:
+#         - name: "X-Service-Route"
+#           value: "catalog-service"
+#         - name: "X-Gateway-Timestamp"
+#           value: "#{timestamp}"
+#         - name: "X-Service-Version"
+#           value: "v1.0.0"
+#         - name: "X-Routing-Source"
+#           value: "gateway-repository"
 
-  # Catalog GraphQL endpoint
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/products/graphql
-    - headers:
-      - name: "Content-Type"
-        value: "application/json"
-    backendRefs:
-    - name: catalog-management-service
-      port: 8082
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Service-Route"
-          value: "catalog-graphql"
-        - name: "X-Service-Version"
-          value: "v1.0.0"
-        - name: "X-Routing-Source"
-          value: "gateway-repository"
+#   # Catalog GraphQL endpoint
+#   - matches:
+#     - path:
+#         type: PathPrefix
+#         value: /api/v1/products/graphql
+#     - headers:
+#       - name: "Content-Type"
+#         value: "application/json"
+#     backendRefs:
+#     - name: catalog-management-service
+#       port: 8082
+#       weight: 100
+#     filters:
+#     - type: RequestHeaderModifier
+#       requestHeaderModifier:
+#         add:
+#         - name: "X-Service-Route"
+#           value: "catalog-graphql"
+#         - name: "X-Service-Version"
+#           value: "v1.0.0"
+#         - name: "X-Routing-Source"
+#           value: "gateway-repository"
 
-  # Catalog health check endpoint
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /api/v1/products/health
-    backendRefs:
-    - name: catalog-management-service
-      port: 8082
-      weight: 100
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        add:
-        - name: "X-Health-Check"
-          value: "catalog-service"
-        - name: "X-Routing-Source"
-          value: "gateway-repository"
+#   # Catalog health check endpoint
+#   - matches:
+#     - path:
+#         type: PathPrefix
+#         value: /api/v1/products/health
+#     backendRefs:
+#     - name: catalog-management-service
+#       port: 8082
+#       weight: 100
+#     filters:
+#     - type: RequestHeaderModifier
+#       requestHeaderModifier:
+#         add:
+#         - name: "X-Health-Check"
+#           value: "catalog-service"
+#         - name: "X-Routing-Source"
+#           value: "gateway-repository"

@@ -1,0 +1,10 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: gke-l7-global-external-managed
+  labels:
+    app: api-gateway
+    component: gateway-api
+spec:
+  controllerName: networking.gke.io/gateway
+  description: "GKE L7 Global External Managed Gateway Class for production"

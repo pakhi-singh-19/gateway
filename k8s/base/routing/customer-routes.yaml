@@ -10,7 +10,6 @@ metadata:
     app: api-gateway
     component: routing
     service: customer-management
-    managed-by: terraform
   annotations:
     config.kubernetes.io/origin: "gateway-repository"
     service.kubernetes.io/target: "customer-management-service"

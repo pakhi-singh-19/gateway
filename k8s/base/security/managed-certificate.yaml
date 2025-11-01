@@ -1,0 +1,12 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: microservices-ssl-cert
+  namespace: microservices
+  labels:
+    app: api-gateway
+    component: security
+spec:
+  domains:
+  - api.microservices.ecp-project-476405.com
+  - microservices.ecp-project-476405.com
